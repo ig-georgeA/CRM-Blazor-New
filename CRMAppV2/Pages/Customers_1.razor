@@ -1,0 +1,264 @@
+@layout MainLayout
+@page "/customers-(1)"
+
+@using NorthwindSwagger
+@using Models.NorthwindSwagger
+@using System.Reactive.Subjects
+@using System.Reactive.Linq
+@inject INorthwindSwaggerService NorthwindSwaggerService
+@implements IDisposable;
+
+<div class="row-layout customers-1-container">
+    <div class="column-layout page-container">
+        <div class="column-layout page-header">
+            <div class="row-layout header">
+                <div class="row-layout page-title">
+                    <span class="material-icons icon">
+                        people_outline
+                    </span>
+                    <h5 class="h5">
+                        Customers
+                    </h5>
+                </div>
+                <div class="row-layout buttons">
+                    <IgbButton DisplayType="ButtonBaseType.Button" @onclick=@(e => _newCustomerDialog!.ToggleAsync()) class="button" customers_1-scope>
+                        <span class="material-icons">
+                            add
+                        </span>
+                        <span>New Customer</span>
+                    </IgbButton>
+                    <IgbButton Variant="ButtonVariant.Outlined" Disabled=true DisplayType="ButtonBaseType.Button" class="button" customers_1-scope>
+                        <span class="material-icons">
+                            search
+                        </span>
+                        <span>Discover companies</span>
+                    </IgbButton>
+                    <IgbButton Variant="ButtonVariant.Outlined" Disabled=true DisplayType="ButtonBaseType.Button" class="button" customers_1-scope>
+                        <span class="material-icons">
+                            import_export
+                        </span>
+                        <span>Import</span>
+                    </IgbButton>
+                </div>
+            </div>
+        </div>
+        <div class="column-layout group">
+            <div class="row-layout filters-and-sorting">
+                <div class="row-layout group_1">
+                    <IgbInput DisplayType="InputType.Search" @bind-Value=@_value Placeholder="Search" Outlined=true class="user-input" customers_1-scope>
+                        <span slot="prefix">
+                            <span class="material-icons icon_1">
+                                search
+                            </span>
+                        </span>
+                    </IgbInput>
+                </div>
+                <IgbSelect Outlined=false Value=@_value1 Change=@(e => _value1 = e.Detail.Value) class="user-input" customers_1-scope>
+                    <IgbSelectItem Value="1">
+                        Recently updated
+                    </IgbSelectItem>
+                    <IgbSelectItem Value="2">
+                        Name
+                    </IgbSelectItem>
+                </IgbSelect>
+            </div>
+            <IgbGrid Data=@_grid_Data_Request1?.Items PrimaryKey="CustomerId" RowSelection="GridSelectionMode.Single" HideRowSelectors=true RowEditable=true PagingMode="GridPagingMode.Remote" AllowFiltering=true FilterMode="FilterMode.ExcelStyleFilter" RowDeleted=rowDeletedGrid RowEditDone=rowEditDoneGrid RowAdded=rowAddedGrid RowSelectionChanging=@(e => _selectedCustomer2 = e.Detail.NewSelection.FirstOrDefault() as CustomerDto) class="ig-typography grid" customers_1-scope>
+                <IgbPaginator PerPage=@Grid_Page_Size1 TotalRecords=@(_grid_Data_Request1?.TotalRecordsCount ?? default) Page=@Grid_Page_Index1 PageChange=@(e => Grid_Page_Index1 = e.Detail) PerPageChange=@(e => Grid_Page_Size1 = e.Detail)></IgbPaginator>
+                <IgbColumn Field="CustomerId" DataType="GridColumnDataType.String" Header="customerId" Editable=false Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="CompanyName" DataType="GridColumnDataType.String" Header="companyName" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="ContactName" DataType="GridColumnDataType.String" Header="contactName" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="ContactTitle" DataType="GridColumnDataType.String" Header="contactTitle" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.Street" DataType="GridColumnDataType.String" Header="address street" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.City" DataType="GridColumnDataType.String" Header="address city" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.Region" DataType="GridColumnDataType.String" Header="address region" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.PostalCode" DataType="GridColumnDataType.String" Header="address postalCode" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.Country" DataType="GridColumnDataType.String" Header="address country" Sortable=true Selectable=false></IgbColumn>
+                <IgbColumn Field="Address.Phone" DataType="GridColumnDataType.String" Header="address phone" Sortable=true Selectable=false></IgbColumn>
+                <IgbActionStrip>
+                    <IgbGridPinningActions></IgbGridPinningActions>
+                    <IgbGridEditingActions AddRow=true></IgbGridEditingActions>
+                </IgbActionStrip>
+            </IgbGrid>
+        </div>
+    </div>
+    <IgbDialog KeepOpenOnEscape=true HideDefaultAction=true @ref=_newCustomerDialog>
+        <h5 slot="title">
+            New Customer
+        </h5>
+        <EditForm OnValidSubmit=onValidSubmitCustomerDto @ref=_newcustomerform EditContext="new_customer_formEditContext" FormName="new_customer_form" class="column-layout new_customer_form" customers_1-scope>
+            <div class="column-layout form_fields">
+                <IgbInput Value=@New_customer_formModel.CompanyName Label="Company name" Required=true Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.CompanyName = e.Detail)>
+                    <p slot="value-missing">This field is required</p>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                </IgbInput>
+                <IgbInput Value=@New_customer_formModel.ContactName Label="Contact name" Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.ContactName = e.Detail)>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                </IgbInput>
+                <IgbInput Value=@New_customer_formModel.ContactTitle Label="Contact title" Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.ContactTitle = e.Detail)>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                </IgbInput>
+                <IgbInput Value=@New_customer_formModel.Address?.Street Label="Street" Outlined=false MinLength=0 MaxLength=100 Change=@(e => New_customer_formModel.Address!.Street = e.Detail)>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 100 character(s) long</p>
+                </IgbInput>
+                <IgbInput Value=@New_customer_formModel.Address?.City Label="City" Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.Address!.City = e.Detail)>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                </IgbInput>
+                <div class="row-layout group_2">
+                    <IgbInput Value=@New_customer_formModel.Address?.Region Label="Region" Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.Address!.Region = e.Detail) class="input" customers_1-scope>
+                        <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                        <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                    </IgbInput>
+                    <IgbInput Value=@New_customer_formModel.Address?.PostalCode Label="Postal code" Outlined=false MinLength=0 MaxLength=20 Change=@(e => New_customer_formModel.Address!.PostalCode = e.Detail) class="input" customers_1-scope>
+                        <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                        <p slot="too-long">Entry should be no more than 20 character(s) long</p>
+                    </IgbInput>
+                </div>
+                <IgbInput Value=@New_customer_formModel.Address?.Country Label="Country" Outlined=false MinLength=0 MaxLength=50 Change=@(e => New_customer_formModel.Address!.Country = e.Detail) class="input_1" customers_1-scope>
+                    <p slot="too-short">Entry should be at least 0 character(s) long</p>
+                    <p slot="too-long">Entry should be no more than 50 character(s) long</p>
+                </IgbInput>
+                <IgbInput Value=@New_customer_formModel.Address?.Phone Label="Phone" Outlined=false Pattern="^\+?[0-9][0-9\-]{1,14}$" Change=@(e => New_customer_formModel.Address!.Phone = e.Detail)>
+                    <p slot="pattern-mismatch">Entry does not match the required pattern</p>
+                </IgbInput>
+            </div>
+            <IgbSnackbar ActionText="OK" Action=@(e => _snackbarsuccess!.ToggleAsync()) @ref=_snackbarsuccess>
+                Your new submission was saved successfully!
+            </IgbSnackbar>
+            <IgbSnackbar ActionText="OK" Action=@(e => _snackbarerror!.ToggleAsync()) @ref=_snackbarerror>
+                Uh-oh! Something went wrong.
+            </IgbSnackbar>
+            <div class="row-layout group_3">
+                <IgbButton Variant="ButtonVariant.Flat" DisplayType="ButtonBaseType.Reset" @onclick=@(() => New_customer_formModel = new()) class="button_1" customers_1-scope>
+                    Reset
+                </IgbButton>
+                <div class="row-layout group_4">
+                    <IgbButton Variant="ButtonVariant.Outlined" DisplayType="ButtonBaseType.Button" @onclick=clickButton class="button_1" customers_1-scope>
+                        Cancel
+                    </IgbButton>
+                    <IgbButton DisplayType="ButtonBaseType.Submit" class="button_1" customers_1-scope>
+                        Add
+                    </IgbButton>
+                </div>
+            </div>
+        </EditForm>
+    </IgbDialog>
+    <div class="column-layout group_5"></div>
+</div>
+
+@code {
+    private CustomerDtoPagedResultDto _grid_Data_Request1;
+    private Subject<object> _grid_Data_Request1Subject = new Subject<object>();
+
+    private Subject<object> destroy = new();
+    private double _grid_Page_Index1 = 0;
+    public double Grid_Page_Index1
+    {
+        get => _grid_Page_Index1;
+        set
+        {
+            _grid_Page_Index1 = value;
+            _grid_Data_Request1Subject.OnNext(value);
+        }
+    }
+
+    private double _grid_Page_Size1 = 20;
+    public double Grid_Page_Size1
+    {
+        get => _grid_Page_Size1;
+        set
+        {
+            _grid_Page_Size1 = value;
+            _grid_Data_Request1Subject.OnNext(value);
+        }
+    }
+
+    private CustomerDto _selectedCustomer2;
+    private string _value;
+    private string _value1 = "1";
+    private CustomerDto _new_customer_formModel = new();
+    private CustomerDto New_customer_formModel
+    {
+        get => _new_customer_formModel;
+        set
+        {
+            _new_customer_formModel = value;
+            new_customer_formEditContext = new(New_customer_formModel);
+        }
+    }
+
+    private IgbDialog _newCustomerDialog;
+    private EditForm _newcustomerform;
+    private IgbSnackbar _snackbarsuccess;
+    private IgbSnackbar _snackbarerror;
+    private EditContext new_customer_formEditContext = new(new CustomerDto());
+
+    public Customers_1()
+    {
+        New_customer_formModel = new();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _grid_Data_Request1 = await NorthwindSwaggerService.GetCustomerDtoPagedResultDto((int)Grid_Page_Index1, (int)Grid_Page_Size1, null);
+        _grid_Data_Request1Subject.TakeUntil(this.destroy).Subscribe(async _ =>
+        {
+            _grid_Data_Request1 = await NorthwindSwaggerService.GetCustomerDtoPagedResultDto((int)Grid_Page_Index1, (int)Grid_Page_Size1, null);
+            await InvokeAsync(StateHasChanged);
+        });
+        await base.OnInitializedAsync();
+    }
+
+    private async void rowDeletedGrid(IgbRowDataEventArgs e)
+    {
+        await NorthwindSwaggerService.DeleteCustomerDto((e.Detail.RowData as CustomerDto)?.CustomerId ?? string.Empty);
+    }
+
+    private async void rowEditDoneGrid(IgbGridEditDoneEventArgs e)
+    {
+        if (e.Detail.IsAddRow == false)
+        {
+            await NorthwindSwaggerService.PutCustomerDto((e.Detail.RowData as CustomerDto)?.CustomerId ?? string.Empty, e.Detail.RowData as CustomerDto);
+        }
+    }
+
+    private async void rowAddedGrid(IgbRowDataEventArgs e)
+    {
+        await NorthwindSwaggerService.PostCustomerDto(e.Detail.RowData as CustomerDto);
+    }
+
+    private async void onValidSubmitCustomerDto(EditContext e)
+    {
+        var customerDto = (CustomerDto)e.Model;
+        CustomerDto data = null;
+        if (customerDto != null)
+        {
+            data = await NorthwindSwaggerService.PostCustomerDto(customerDto);
+        }
+        if (data != null)
+        {
+            Grid_Page_Index1 = double.Parse("0");
+            New_customer_formModel = new();
+            _newCustomerDialog.ToggleAsync();
+            _snackbarsuccess.ToggleAsync();
+        } else {
+            _snackbarerror.ToggleAsync();
+        }
+    }
+
+    private void clickButton()
+    {
+        New_customer_formModel = new();
+        _newCustomerDialog.ToggleAsync();
+    }
+
+    public void Dispose()
+    {
+        this.destroy.OnNext(null);
+        this.destroy.Dispose();
+    }
+}

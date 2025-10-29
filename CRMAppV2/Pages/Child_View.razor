@@ -1,0 +1,52 @@
+@layout MainLayout
+@page "/child-view"
+
+@using NorthwindSwagger
+@using Models.NorthwindSwagger
+@inject INorthwindSwaggerService NorthwindSwaggerService
+
+<div class="row-layout child-view-container">
+    <IgbGrid Data=@_northwindSwaggerCustomerDto PrimaryKey="CustomerId" RowEditable=true AllowFiltering=true FilterMode="FilterMode.ExcelStyleFilter" RowEditDone=rowEditDoneGrid class="ig-typography grid" child_view-scope>
+        <IgbColumn Field="CustomerId" DataType="GridColumnDataType.String" Header="customerId" Editable=false Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="CompanyName" DataType="GridColumnDataType.String" Header="companyName" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="ContactName" DataType="GridColumnDataType.String" Header="contactName" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="ContactTitle" DataType="GridColumnDataType.String" Header="contactTitle" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.Street" DataType="GridColumnDataType.String" Header="address street" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.City" DataType="GridColumnDataType.String" Header="address city" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.Region" DataType="GridColumnDataType.String" Header="address region" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.PostalCode" DataType="GridColumnDataType.String" Header="address postalCode" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.Country" DataType="GridColumnDataType.String" Header="address country" Sortable=true Selectable=false></IgbColumn>
+        <IgbColumn Field="Address.Phone" DataType="GridColumnDataType.String" Header="address phone" Sortable=true Selectable=false></IgbColumn>
+        <IgbActionStrip>
+            <IgbGridPinningActions></IgbGridPinningActions>
+            <IgbGridEditingActions AddRow=true></IgbGridEditingActions>
+        </IgbActionStrip>
+    </IgbGrid>
+    <IgbSnackbar ActionText="Action" Action=@(e => _successSnackbar!.ToggleAsync()) @ref=_successSnackbar class="success-snackbar" child_view-scope>
+        Customer information was updated!
+    </IgbSnackbar>
+</div>
+
+@code {
+    private IgbSnackbar _successSnackbar;
+    private List<CustomerDto> _northwindSwaggerCustomerDto = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _northwindSwaggerCustomerDto = await NorthwindSwaggerService.GetCustomerDtoList();
+        await base.OnInitializedAsync();
+    }
+
+    private async void rowEditDoneGrid(IgbGridEditDoneEventArgs e)
+    {
+        CustomerDto data = null;
+        if (e.Detail.IsAddRow == false)
+        {
+            data = await NorthwindSwaggerService.PutCustomerDto((e.Detail.RowData as CustomerDto)?.CustomerId ?? string.Empty, e.Detail.RowData as CustomerDto);
+        }
+        if (data != null)
+        {
+            _successSnackbar.ToggleAsync();
+        }
+    }
+}
